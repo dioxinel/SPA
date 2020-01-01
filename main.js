@@ -3,13 +3,6 @@ let APIKEY = '';  // Enter your apikey
 let baseImageURL = "https://image.tmdb.org/t/p/";
 let posterSize = 'w185';
 
-let createPaginNode = function (num, place) {
-  let p = document.createElement('a');
-  p.num = num;
-  p.innerHTML = num;
-  p.addEventListener('click', pagin);
-  place.append(p);
-}
 
 let hidOrDisplay = function () {
   let obj = this.parentNode.lastChild;
@@ -89,6 +82,9 @@ let displayNumberOfSeasons = function (data) {
 
 
 let getPopular = function (num) {
+  if (typeof(num) == 'object'){
+    num = 1; 
+  }
   output.remove();
   let url = "".concat(baseURL, 'tv/popular?api_key=', APIKEY, '&language=en-US&page=', num);
   fetch(url)
@@ -102,11 +98,14 @@ let getPopular = function (num) {
       createTitle(show, data, output);
     }
     let lastp = data.total_pages;
-    createPagin(lastp);
+    updatePagin(lastp, num);
   })
 }
 
 let getRated = function (num) {
+  if (!num){
+    num = 1; 
+  }
   output.remove();
   let url = "".concat(baseURL, 'tv/top_rated?api_key=', APIKEY, '&language=en-US&page=', num);
   fetch(url)
@@ -119,15 +118,24 @@ let getRated = function (num) {
       createTitle(show, data, output);
     }
     let lastp = data.total_pages;
-    clreatePagin(lastp);
+    updatePagin(lastp, num);
 
   })
 }
 // document.addEventListener('DOMContentLoaded', getConfig);
 document.addEventListener('DOMContentLoaded', getPopular);
 
+let createPaginNode = function (num, place) {
+  let p = document.createElement('a');
+  p.num = num;
+  p.innerHTML = num;
+  p.addEventListener('click', pagin);
+  place.append(p);
+}
+
+
 let router = function  (pageNum) {
-  if(!pageNum) {
+  if(typeof(pageNum) == 'object'){
     pageNum = 1;
   }
   if(window.location.hash == '#topRated'){
@@ -142,30 +150,10 @@ window.addEventListener('hashchange', router);
 let pagin = function () {
   let center = this.num;
   router(center);
-  while (mainPart.lastChild) {
-    mainPart.lastChild.remove();
-  }
-  if (center >= '2') { 
-    if (!beforeMain.lastChild) {
-    createPaginNode(1, beforeMain);
-    let threep = document.createTextNode('...');
-    beforeMain.append(threep);
-  }
-  }
-  if (center >= afterMain.lastChild.innerHTML){
-    center = afterMain.lastChild.innerHTML - 2;
-  }
-  if (center <= 2){
-    center = 3;
-
-  }
-  for (let i = center - 2; i < center + 2; i++) {
-    createPaginNode(i, mainPart);
-  }
 }
 
 
-let createPagin = function (lastp) {
+let updatePagin = function (lastp, center) {
   if(pagination) {
     pagination.remove();
   }
@@ -181,11 +169,27 @@ let createPagin = function (lastp) {
   full. append(main);
   full. append(after);
   body.append(full);
-  for (let i = 1; i < 6; i++){
+  let copyCenter = center;
+  if (center < 3) {
+    center = 3;
+  }
+  else if (center > lastp - 3) {
+    center = lastp - 2;
+  }
+
+  if(!(copyCenter > lastp - 3)) {
+    let threep = document.createTextNode('...');
+    afterMain.append(threep);
+    createPaginNode(lastp, afterMain);
+  }
+  if(!(copyCenter < 3)){
+    createPaginNode(1, beforeMain);
+    let threep = document.createTextNode('...');
+    beforeMain.append(threep);
+  }
+
+  for (let i = center - 2; i < center + 3; i++){
   createPaginNode(i, mainPart);
   }
-let threep = document.createTextNode('...');
-afterMain.append(threep);
-createPaginNode(lastp, afterMain);
 }
 
