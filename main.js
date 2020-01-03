@@ -4,33 +4,21 @@ let baseImageURL = "https://image.tmdb.org/t/p/";
 let posterSize = 'w185';
 
 
-let getPopular = function (num) {
+let getMainList = function (num) {
   if (typeof(num) == 'object'){
     num = 1; 
   }
   output.remove();
-  let url = "".concat(baseURL, 'tv/popular?api_key=', APIKEY, '&language=en-US&page=', num);
-  fetch(url)
-  .then(result=>result.json())
-  .then((data)=>{
-    let smth = document.createElement('div');
-    smth.id = 'output';
-    page.append(smth);
-    for (let show in data.results) {
-      createTitle(show, data, output);
-    }
-    let lastp = data.total_pages;
-    updatePagin(lastp, num);
-  })
-}
 
-
-let getRated = function (num) {
-  if (!num){
-    num = 1; 
+  let mainPartUrl;
+  if(window.location.hash == '#topRated'){
+    mainPartUrl = 'tv/top_rated?api_key=';
   }
-  output.remove();
-  let url = "".concat(baseURL, 'tv/top_rated?api_key=', APIKEY, '&language=en-US&page=', num);
+  else{
+    mainPartUrl = 'tv/popular?api_key=';
+  }
+
+  let url = "".concat(baseURL, mainPartUrl, APIKEY, '&language=en-US&page=', num);
   fetch(url)
   .then(result=>result.json())
   .then((data)=>{
@@ -42,7 +30,6 @@ let getRated = function (num) {
     }
     let lastp = data.total_pages;
     updatePagin(lastp, num);
-
   })
 }
 
@@ -178,22 +165,9 @@ let createPaginNode = function (num, place) {
 }
 
 
-let router = function  (pageNum) {
-  if(typeof(pageNum) == 'object'){
-    pageNum = 1;
-  }
-  if(window.location.hash == '#topRated'){
-    getRated(pageNum);
-  }
-  else{
-    getPopular(pageNum);
-  }
-}
-
-
 let pagin = function () {
   let center = this.num;
-  router(center);
+  getMainList(center);
 }
 
 
@@ -261,8 +235,8 @@ let hidOrDisplayV2 = function () {
 
 
 // document.addEventListener('DOMContentLoaded', getConfig);
-document.addEventListener('DOMContentLoaded', getPopular);
-window.addEventListener('hashchange', router);
+document.addEventListener('DOMContentLoaded', getMainList);
+window.addEventListener('hashchange', getMainList);
 
 
  // To get image config
